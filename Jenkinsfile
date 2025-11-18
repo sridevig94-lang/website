@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         BRANCH = ""
+        IMAGE = "adword-website"
     }
 
     stages {
@@ -28,12 +29,28 @@ pipeline {
             }
         }
 
+        stage('Docker Build') {
+            steps {
+                script {
+                    echo "Building Docker image..."
+                    sh """
+                    docker build -t ${IMAGE}:${BRANCH} .
+                    """
+                }
+            }
+        }
+
         stage('Prod Deploy') {
             when {
                 expression { BRANCH == "master" }
             }
             steps {
-                echo "Running PROD DEPLOY (only for master branch)"
+                script {
+                    echo "Deploying to /var/www/html (Production)"
+                    sh """
+                    sudo cp -r . /var/www/html/
+                    """
+                }
             }
         }
     }
